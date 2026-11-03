@@ -259,6 +259,51 @@ struct KillProcessIntent: AppIntent {
     }
 }
 
+// MARK: - Trip Intents
+
+struct StopSpoofingIntent: AppIntent {
+    static var title: LocalizedStringResource = "Stop Location Spoofing"
+    static var description = IntentDescription(
+        "Stops any running trip and restores your real location. No confirmation, so it works in automations (e.g. when joining home Wi-Fi).",
+        categoryName: "Location"
+    )
+    static var openAppWhenRun: Bool = false
+
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        let cleared = await TripRunner.shared.stopAndClear()
+        return .result(value: cleared ? "Real location restored." : "Nothing was being simulated.")
+    }
+}
+
+struct StartTripIntent: AppIntent {
+    static var title: LocalizedStringResource = "Start Trip"
+    static var description = IntentDescription(
+        "Runs a trip using the Home and Destination saved in the Trip Planner.",
+        categoryName: "Location"
+    )
+    static var openAppWhenRun: Bool = false
+
+    @Parameter(title: "Preset File", description: "Script in the trips folder, e.g. default.js", default: "default.js")
+    var file: String
+
+    func perform() async throws -> some IntentResult & ReturnsValue<String> {
+        let d = UserDefaults.standard
+        guard let home = d.string(forKey: "trip.home.name"), !home.isEmpty else {
+            return .result(value: "Set Home in the Trip Planner first.")
+        }
+        let args: [String: Any] = [
+            "home": ["lat": d.double(forKey: "trip.home.lat"), "lon": d.double(forKey: "trip.home.lon"), "name": home],
+            "dest": ["lat": d.double(forKey: "trip.dest.lat"), "lon": d.double(forKey: "trip.dest.lon"),
+                     "name": d.string(forKey: "trip.dest.name") ?? ""],
+            "stayMinutes": d.object(forKey: "trip.stayMinutes") as? Double ?? 120,
+            "driveBack": d.object(forKey: "trip.driveBack") as? Bool ?? true,
+            "clearAtEnd": d.object(forKey: "trip.clearAtEnd") as? Bool ?? true,
+        ]
+        await MainActor.run { TripRunner.shared.runRemote(file: file, args: args) }
+        return .result(value: "Trip started.")
+    }
+}
+
 // MARK: - Shortcuts Provider
 
 struct StikDebugShortcuts: AppShortcutsProvider {
@@ -290,6 +335,21 @@ struct StikDebugShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Kill Process",
             systemImageName: "xmark.circle.fill"
+        )
+        AppShortcut(
+            intent: StopSpoofingIntent(),
+            phrases: [
+                "Stop location spoofing with \(.applicationName)",
+                "\(.applicationName) use my real location"
+            ],
+            shortTitle: "Stop Spoofing",
+            systemImageName: "location.slash.fill"
+        )
+        AppShortcut(
+            intent: StartTripIntent(),
+            phrases: ["Start trip with \(.applicationName)"],
+            shortTitle: "Start Trip",
+            systemImageName: "car.fill"
         )
     }
 }

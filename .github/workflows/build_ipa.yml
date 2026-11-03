@@ -4,6 +4,7 @@ on:
   push:
     branches: [ "**" ]
     tags: [ "[0-9]*" ]
+    paths-ignore: [ "trips/**", ".trip-test/**" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
