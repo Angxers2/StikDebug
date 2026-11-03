@@ -16,20 +16,15 @@ workflows:
       - name: Build unsigned IPA (sign it in Feather)
         script: |
           set -o pipefail
-          { echo "== Xcodes:"; ls -d /Applications/Xcode*; } > build.log 2>&1
-          X=$(ls -d /Applications/Xcode*27*.app 2>/dev/null | sort -V | tail -1)
-          if [ -n "$X" ]; then sudo xcode-select -s "$X"; fi
+          brew install xcodegen >/dev/null && xcodegen generate > build.log 2>&1
           xcodebuild -version >> build.log 2>&1
-          xcodebuild clean archive \
-            -project StikDebug.xcodeproj -scheme StikDebug -configuration Debug \
-            -archivePath build/StikDebug.xcarchive -sdk iphoneos \
-            -destination 'generic/platform=iOS' ONLY_ACTIVE_ARCH=NO \
+          xcodebuild -project StikDebugGen.xcodeproj -scheme StikDebug -configuration Debug \
+            -destination generic/platform=iOS -derivedDataPath build/dd \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
-            SWIFT_OPTIMIZATION_LEVEL="-Onone" IPHONEOS_DEPLOYMENT_TARGET=17.4 2>&1 | tee -a build.log | grep -E "error:|warning: .*Trip|ARCHIVE" || true
-          if [ -d build/StikDebug.xcarchive/Products/Applications/StikDebug.app ]; then
-            mkdir -p Payload
-            cp -R build/StikDebug.xcarchive/Products/Applications/StikDebug.app Payload/
-            zip -qr StikDebug-Trips.ipa Payload
+            SWIFT_OPTIMIZATION_LEVEL="-Onone" build 2>&1 | tee -a build.log | grep -E "error:|BUILD" | head -80 || true
+          APP=build/dd/Build/Products/Debug-iphoneos/StikDebug.app
+          if [ -f "$APP/Info.plist" ]; then
+            mkdir -p Payload && cp -R "$APP" Payload/ && zip -qry StikDebug-Trips.ipa Payload
           else
             echo "BUILD FAILED, see build.log" | tee -a build.log
           fi

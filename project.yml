@@ -1,0 +1,68 @@
+# XcodeGen spec mirroring StikDebug.xcodeproj (which uses Xcode 27's new format)
+# so Codemagic's Xcode 26 can build it: `xcodegen generate` -> StikDebugGen.xcodeproj
+name: StikDebugGen
+options:
+  deploymentTarget:
+    iOS: "17.4"
+packages:
+  CodeEditorView:
+    url: https://github.com/mchakravarty/CodeEditorView
+    from: 0.15.4
+targets:
+  StikDebug:
+    type: application
+    platform: iOS
+    scheme: {}
+    sources:
+      - path: StikDebug
+        excludes:
+          - Info.plist
+          - StikDebug.icon
+          - StikDebug.icon/**
+          - idevice/libidevice_ffi.a
+      - path: StikDebug/StikDebug.icon
+        type: file
+        buildPhase: resources
+    dependencies:
+      - framework: StikDebug/idevice/libidevice_ffi.a
+        embed: false
+      - package: CodeEditorView
+        product: CodeEditorView
+      - package: CodeEditorView
+        product: LanguageSupport
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_APPICON_NAME: StikDebug
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "NO"
+        CLANG_ENABLE_MODULES: "YES"
+        CODE_SIGN_ENTITLEMENTS: StikDebug/StikDebug.entitlements
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: "YES"
+        HEADER_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/StikDebug/idevice"]
+        INFOPLIST_FILE: StikDebug/Info.plist
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: "NO"
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: "YES"
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: StikDebug needs access to devices on your local network so it can connect to the targets you add to the Device Library.
+        INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription: StikDebug uses location to stay running in the background and maintain your JIT connection.
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: StikDebug uses location to stay running in the background and maintain your JIT connection.
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: "YES"
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: "YES"
+        INFOPLIST_KEY_UILaunchScreen_Generation: "YES"
+        INFOPLIST_KEY_UIStatusBarStyle: UIStatusBarStyleDefault
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
+        INFOPLIST_KEY_UISupportsDocumentBrowser: "YES"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.4"
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/Frameworks"
+        LIBRARY_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/StikDebug/idevice"]
+        MARKETING_VERSION: 3.2.0
+        PRODUCT_BUNDLE_IDENTIFIER: com.stik.stikdebug
+        SWIFT_EMIT_LOC_STRINGS: "YES"
+        SWIFT_INCLUDE_PATHS: "$(inherited) $(PROJECT_DIR)/StikDebug/idevice"
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CLANG_CXX_LANGUAGE_STANDARD: gnu++20
+        GCC_C_LANGUAGE_STANDARD: gnu17
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
+        LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
