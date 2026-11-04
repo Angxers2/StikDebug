@@ -24,6 +24,7 @@ targets:
         type: file
         buildPhase: resources
     dependencies:
+      - target: TripWidget
       - framework: StikDebug/idevice/libidevice_ffi.a
         embed: false
       - package: CodeEditorView
@@ -53,6 +54,7 @@ targets:
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
         INFOPLIST_KEY_UISupportsDocumentBrowser: "YES"
+        INFOPLIST_KEY_NSSupportsLiveActivities: "YES"
         IPHONEOS_DEPLOYMENT_TARGET: "17.4"
         LD_RUNPATH_SEARCH_PATHS: "@executable_path/Frameworks"
         LIBRARY_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_DIR)/StikDebug/idevice"]
@@ -66,3 +68,27 @@ targets:
         GCC_C_LANGUAGE_STANDARD: gnu17
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: "YES"
         LOCALIZATION_PREFERS_STRING_CATALOGS: "YES"
+
+  TripWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: TripWidget
+      - path: StikDebug/Trip/TripActivityShared.swift
+    info:
+      path: TripWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Trips
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stik.stikdebug.TripWidget
+        IPHONEOS_DEPLOYMENT_TARGET: "17.4"
+        MARKETING_VERSION: 3.2.0
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_EXTENSION"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+        SKIP_INSTALL: "YES"

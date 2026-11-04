@@ -1,8 +1,9 @@
 [
-  { "name": "Quick Trip", "file": "default.js", "description": "Home -> your destination -> stay -> back", "needsDestination": true },
-  { "name": "Movie Night", "file": "movies.js", "description": "Nearest Cineplex, ~2.5h, then home" },
-  { "name": "Grocery Run", "file": "groceries.js", "description": "Nearest grocery store, 25-40 min" },
-  { "name": "Gym Session", "file": "gym.js", "description": "Nearest gym, 1-1.5h" },
-  { "name": "Mall Hangout", "file": "mall.js", "description": "Nearest mall, 2-3h, walks around a lot" },
-  { "name": "Errands Loop", "file": "errands.js", "description": "Gas -> Tim Hortons -> pharmacy -> home" }
+  { "name": "Quick Trip", "file": "default.js", "icon": "car.fill", "description": "Your start, stops and destination from the Drive tab", "needsDestination": true },
+  { "name": "Movie Night", "file": "movies.js", "icon": "popcorn.fill", "description": "Nearest Cineplex, ~2.5h, then home" },
+  { "name": "Coffee Run", "file": "coffee.js", "icon": "cup.and.saucer.fill", "description": "Tim Hortons drive-thru and back" },
+  { "name": "Grocery Run", "file": "groceries.js", "icon": "cart.fill", "description": "Nearest grocery store, 25-40 min" },
+  { "name": "Gym Session", "file": "gym.js", "icon": "dumbbell.fill", "description": "Nearest gym, 1-1.5h" },
+  { "name": "Mall Hangout", "file": "mall.js", "icon": "bag.fill", "description": "Nearest mall, 2-3h, walks around a lot" },
+  { "name": "Errands Loop", "file": "errands.js", "icon": "checklist", "description": "Gas -> Tim Hortons drive-thru -> pharmacy -> home" }
 ]

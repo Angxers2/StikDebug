@@ -1,6 +1,3 @@
-// Quick Trip: Home -> picked destination -> stay -> (drive back) -> (real location).
-const a = trip.args;
-startAtHome(a.home);
-visit(a.dest, a.stayMinutes);
-if (a.driveBack) driveHome(a.home);
-finish(a);
+// Quick Trip: start -> your stops -> destination -> stay -> back (switching to real location near home).
+leaveStart();
+standardTrip(trip.args.dest, trip.args.stayMinutes, 25);

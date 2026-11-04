@@ -278,28 +278,20 @@ struct StopSpoofingIntent: AppIntent {
 struct StartTripIntent: AppIntent {
     static var title: LocalizedStringResource = "Start Trip"
     static var description = IntentDescription(
-        "Runs a trip using the Home and Destination saved in the Trip Planner.",
+        "Runs a trip using the start, stops and destination saved in the Trip Planner.",
         categoryName: "Location"
     )
-    static var openAppWhenRun: Bool = false
+    static var openAppWhenRun: Bool = true
 
-    @Parameter(title: "Preset File", description: "Script in the trips folder, e.g. default.js", default: "default.js")
+    @Parameter(title: "Preset File", description: "Script in the trips folder, e.g. default.js or movies.js", default: "default.js")
     var file: String
 
+    @MainActor
     func perform() async throws -> some IntentResult & ReturnsValue<String> {
-        let d = UserDefaults.standard
-        guard let home = d.string(forKey: "trip.home.name"), !home.isEmpty else {
-            return .result(value: "Set Home in the Trip Planner first.")
+        let plan = TripPlan.load()
+        if let problem = await TripRunner.shared.start(plan: plan, file: file, name: plan.dest?.name ?? "Trip") {
+            return .result(value: problem)
         }
-        let args: [String: Any] = [
-            "home": ["lat": d.double(forKey: "trip.home.lat"), "lon": d.double(forKey: "trip.home.lon"), "name": home],
-            "dest": ["lat": d.double(forKey: "trip.dest.lat"), "lon": d.double(forKey: "trip.dest.lon"),
-                     "name": d.string(forKey: "trip.dest.name") ?? ""],
-            "stayMinutes": d.object(forKey: "trip.stayMinutes") as? Double ?? 120,
-            "driveBack": d.object(forKey: "trip.driveBack") as? Bool ?? true,
-            "clearAtEnd": d.object(forKey: "trip.clearAtEnd") as? Bool ?? true,
-        ]
-        await MainActor.run { TripRunner.shared.runRemote(file: file, args: args) }
         return .result(value: "Trip started.")
     }
 }
