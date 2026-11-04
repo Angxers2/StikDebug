@@ -53,11 +53,11 @@ struct TripLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                Image(systemName: state.phase.symbol).foregroundStyle(tint(state.phase))
+                Image(systemName: state.phase.symbol).foregroundStyle(phaseTint(state.phase))
             } compactTrailing: {
                 TrailingValue(state: state).font(.caption.weight(.semibold)).frame(maxWidth: 56)
             } minimal: {
-                Image(systemName: state.phase.symbol).foregroundStyle(tint(state.phase))
+                Image(systemName: state.phase.symbol).foregroundStyle(phaseTint(state.phase))
             }
         }
     }
@@ -116,7 +116,7 @@ private struct BottomInfo: View {
     var body: some View {
         if isMoving(state.phase) {
             VStack(spacing: 4) {
-                ProgressView(value: min(1, max(0, state.progress))).tint(tint(state.phase))
+                ProgressView(value: min(1, max(0, state.progress))).tint(phaseTint(state.phase))
                 if let eta = state.eta {
                     HStack {
                         Text("Arrive \(eta.formatted(date: .omitted, time: .shortened))")
@@ -148,7 +148,7 @@ private struct PhaseIcon: View {
             .font(.system(size: size * 0.45, weight: .semibold))
             .foregroundStyle(.white)
             .frame(width: size, height: size)
-            .background(tint(phase).gradient, in: RoundedRectangle(cornerRadius: size * 0.28))
+            .background(phaseTint(phase).gradient, in: RoundedRectangle(cornerRadius: size * 0.28))
     }
 }
 
@@ -156,7 +156,7 @@ private func isMoving(_ phase: TripPhase) -> Bool {
     phase == .driving || phase == .stopped || phase == .walking || phase == .drivethru
 }
 
-private func tint(_ phase: TripPhase) -> Color {
+private func phaseTint(_ phase: TripPhase) -> Color {
     switch phase {
     case .driving: return .blue
     case .stopped: return .red
