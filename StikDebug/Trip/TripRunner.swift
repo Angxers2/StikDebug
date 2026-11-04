@@ -531,9 +531,12 @@ final class TripRunner: ObservableObject {
         let sw = MKMapPoint(x: rect.minX, y: rect.maxY).coordinate
         let ne = MKMapPoint(x: rect.maxX, y: rect.minY).coordinate
         guard ne.latitude - sw.latitude < 0.6, ne.longitude - sw.longitude < 0.6 else { return nil } // too long a drive
-        let pad = 0.001
+        // Snap the box outward to a ~2 km grid so the request doesn't reveal exact start/end points.
+        let grid = 0.02
+        let south = (sw.latitude / grid).rounded(.down) * grid, west = (sw.longitude / grid).rounded(.down) * grid
+        let north = (ne.latitude / grid).rounded(.up) * grid, east = (ne.longitude / grid).rounded(.up) * grid
         let query = """
-        [out:json][timeout:15];node["highway"~"^(traffic_signals|stop|give_way)$"](\(sw.latitude - pad),\(sw.longitude - pad),\(ne.latitude + pad),\(ne.longitude + pad));out;
+        [out:json][timeout:15];node["highway"~"^(traffic_signals|stop|give_way)$"](\(south),\(west),\(north),\(east));out;
         """
         var request = URLRequest(url: URL(string: "https://overpass-api.de/api/interpreter")!, timeoutInterval: 15)
         request.httpMethod = "POST"
