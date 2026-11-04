@@ -7,7 +7,7 @@ options:
 packages:
   CodeEditorView:
     url: https://github.com/mchakravarty/CodeEditorView
-    from: 0.15.4
+    exactVersion: 0.15.4
 targets:
   StikDebug:
     type: application

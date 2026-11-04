@@ -17,9 +17,12 @@ workflows:
         script: |
           set -o pipefail
           brew install xcodegen >/dev/null && xcodegen generate > build.log 2>&1
+          # reuse upstream's pinned package versions
+          mkdir -p StikDebugGen.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+          cp StikDebug.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved StikDebugGen.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
           xcodebuild -version >> build.log 2>&1
           xcodebuild -project StikDebugGen.xcodeproj -scheme StikDebug -configuration Debug \
-            -destination generic/platform=iOS -derivedDataPath build/dd \
+            -destination generic/platform=iOS -derivedDataPath build/dd -onlyUsePackageVersionsFromResolvedFile \
             CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO \
             SWIFT_OPTIMIZATION_LEVEL="-Onone" build 2>&1 | tee -a build.log | grep -E "error:|BUILD" | head -80 || true
           APP=build/dd/Build/Products/Debug-iphoneos/StikDebug.app
