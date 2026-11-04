@@ -12,6 +12,10 @@
 //        phase: driving | stopped | parked | inside | walking | drivethru | done ; leaveAt: ms epoch or null
 //   trip.wait(s) trip.clear() trip.find("query") trip.here() trip.random(a, b) trip.hour() trip.log(m) trip.args
 
+// Compatibility with older app builds (no Live Activity API, `home` instead of `start`).
+if (!trip.activity) trip.activity = function () {};
+if (!trip.args.start && trip.args.home) trip.args.start = trip.args.home;
+
 function offset(p, north, east) {
   const lat = p.lat + north / 111111;
   const lon = p.lon + east / (111111 * Math.cos(p.lat * Math.PI / 180));
