@@ -391,7 +391,7 @@ final class TripRunner: ObservableObject {
     }
 
     /// Bridges a completion-handler API into a blocking call on the trip queue.
-    private func blocking<T>(_ start: (@escaping (T?, Error?) -> Void) -> Void) throws -> T? {
+    private func blocking<T>(_ start: @escaping (@escaping (T?, Error?) -> Void) -> Void) throws -> T? {
         let semaphore = DispatchSemaphore(value: 0)
         var result: T?
         var failure: Error?
