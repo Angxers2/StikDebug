@@ -131,7 +131,8 @@ struct TripPlannerView: View {
                 LiveCard(runner: runner)
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
-            HStack {
+            HStack(alignment: .top) {
+                ShieldPill()
                 Spacer()
                 VStack(spacing: 0) {
                     MapToggle(symbol: follow ? "location.fill" : "location", isOn: $follow)
@@ -165,6 +166,56 @@ struct TripPlannerView: View {
         follow = false
         withAnimation(.easeInOut(duration: 0.6)) {
             camera = .camera(MapCamera(centerCoordinate: coordinate, distance: 900, heading: 0, pitch: show3D ? 45 : 0))
+        }
+    }
+}
+
+// MARK: - Kill switch status
+
+private struct ShieldPill: View {
+    @ObservedObject private var shield = KillSwitch.shared
+
+    var body: some View {
+        Button {
+            Task { await shield.start() }
+        } label: {
+            Label(text, systemImage: symbol)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(shield.state == .blocked ? .white : color)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(shield.state == .blocked ? AnyShapeStyle(Color.red) : AnyShapeStyle(.regularMaterial), in: Capsule())
+                .shadow(color: .black.opacity(0.15), radius: 8, y: 2)
+        }
+        .buttonStyle(.plain)
+        .disabled(shield.state == .ready || shield.state == .armed)
+    }
+
+    private var text: String {
+        switch shield.state {
+        case .off: return "Kill switch off · tap"
+        case .unavailable: return "Kill switch unavailable · retry"
+        case .ready: return "Kill switch ready"
+        case .armed: return "Protected"
+        case .blocked: return "Spoof lost · internet blocked"
+        }
+    }
+
+    private var symbol: String {
+        switch shield.state {
+        case .off, .unavailable: return "shield.slash"
+        case .ready: return "shield"
+        case .armed: return "checkmark.shield.fill"
+        case .blocked: return "exclamationmark.shield.fill"
+        }
+    }
+
+    private var color: Color {
+        switch shield.state {
+        case .off, .unavailable: return .orange
+        case .ready: return .secondary
+        case .armed: return .green
+        case .blocked: return .white
         }
     }
 }

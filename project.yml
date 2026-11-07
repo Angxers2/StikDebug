@@ -25,6 +25,7 @@ targets:
         buildPhase: resources
     dependencies:
       - target: TripWidget
+      - target: Shield
       - framework: StikDebug/idevice/libidevice_ffi.a
         embed: false
       - package: CodeEditorView
@@ -89,6 +90,33 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_VERSION: "5.0"
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) WIDGET_EXTENSION"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
+        SKIP_INSTALL: "YES"
+
+  Shield:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Shield
+        excludes:
+          - Info.plist
+          - Shield.entitlements
+    info:
+      path: Shield/Info.plist
+      properties:
+        CFBundleDisplayName: Shield
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).PacketTunnelProvider
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.stik.stikdebug.Shield
+        CODE_SIGN_ENTITLEMENTS: Shield/Shield.entitlements
+        IPHONEOS_DEPLOYMENT_TARGET: "17.4"
+        MARKETING_VERSION: 3.2.0
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_VERSION: "5.0"
         TARGETED_DEVICE_FAMILY: "1,2"
         LD_RUNPATH_SEARCH_PATHS: "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks"
         SKIP_INSTALL: "YES"

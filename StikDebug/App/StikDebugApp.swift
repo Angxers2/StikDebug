@@ -22,6 +22,9 @@ struct StikDebugApp: App {
                 .task {
                     await downloadMissingDeveloperDiskImageFiles()
                 }
+                .task {
+                    await KillSwitch.shared.start()
+                }
                 .onChange(of: scenePhase) { _, newPhase in
                     handleScenePhaseChange(newPhase)
                 }

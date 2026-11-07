@@ -793,7 +793,14 @@ enum LocationSimulationCommandQueue {
     static let shared = DispatchQueue(label: "com.stik.location-sim", qos: .userInitiated)
 }
 
+/// Every spoof update reports to the kill switch, so it can cut the internet the moment one fails.
 func simulate_location(_ deviceIP: String, _ latitude: Double, _ longitude: Double, _ pairingFile: String) -> Int32 {
+    let code = simulateLocationUnprotected(deviceIP, latitude, longitude, pairingFile)
+    KillSwitch.shared.report(spoofOK: code == LocationSimulationStatus.ok)
+    return code
+}
+
+private func simulateLocationUnprotected(_ deviceIP: String, _ latitude: Double, _ longitude: Double, _ pairingFile: String) -> Int32 {
     if let locationSimulation = LocationSimulationState.locationSimulation {
         if let ffiError = location_simulation_set(locationSimulation, latitude, longitude) {
             idevice_error_free(ffiError)
@@ -883,7 +890,13 @@ func simulate_location(_ deviceIP: String, _ latitude: Double, _ longitude: Doub
     return LocationSimulationStatus.ok
 }
 
+/// Clearing is always a deliberate "use my real location", so it also releases the kill switch.
 func clear_simulated_location() -> Int32 {
+    defer { KillSwitch.shared.disarm() }
+    return clearSimulatedLocationUnprotected()
+}
+
+private func clearSimulatedLocationUnprotected() -> Int32 {
     guard let locationSimulation = LocationSimulationState.locationSimulation else {
         return LocationSimulationStatus.locationClear
     }

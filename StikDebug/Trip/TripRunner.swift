@@ -76,6 +76,7 @@ final class TripRunner: ObservableObject {
     /// Hand back to the real location when the simulated position comes (inbound) within `radius` of `point`.
     private var handover: (point: CLLocation, radius: Double)?
     private var handoverArmed = false
+    private var signalLost = false
 
     private init() {}
 
@@ -170,6 +171,7 @@ final class TripRunner: ObservableObject {
         cancelled = false
         current = nil
         handoverArmed = false
+        signalLost = false
         handover = nil
         if let h = args["handover"] as? [String: Any], let lat = h["lat"] as? Double, let lon = h["lon"] as? Double,
            let radius = args["realWithin"] as? Double, radius > 0 {
@@ -440,30 +442,37 @@ final class TripRunner: ObservableObject {
         } while Date() < end
     }
 
+    /// A failed update doesn't end the trip: the kill switch has already cut the internet, so the
+    /// trip clock keeps running and the spoof resumes at the right spot once it reconnects
+    /// (e.g. back on Wi-Fi), which also releases the internet.
     private func send(_ coordinate: CLLocationCoordinate2D, heading: Double?) throws {
+        try checkCancelled()
         let ip = DeviceConnectionContext.targetIPAddress
         let pairing = PairingFileStore.prepareURL().path
-        for attempt in 0..<3 {
-            try checkCancelled()
-            let code: Int32 = LocationSimulationCommandQueue.shared.sync {
-                self.cancelled ? 0 : simulate_location(ip, coordinate.latitude, coordinate.longitude, pairing)
-            }
-            if code == 0 {
-                current = coordinate
-                try checkHandover(coordinate)
-                DispatchQueue.main.async {
-                    self.position = coordinate
-                    if let heading { self.heading = heading }
-                    if attempt == 0, !LocationSimulationSession.shared.isActive {
-                        LocationSimulationSession.shared.start(at: coordinate)
-                    }
-                }
-                return
-            }
-            appendLog("Location update failed (code \(code)), retrying…")
-            try sleep(2)
+        let code: Int32 = LocationSimulationCommandQueue.shared.sync {
+            self.cancelled ? 0 : simulate_location(ip, coordinate.latitude, coordinate.longitude, pairing)
         }
-        throw TripError("Lost connection: is LocalDevVPN on?")
+        guard code == 0 else {
+            if !signalLost {
+                signalLost = true
+                appendLog("Spoof lost (code \(code)): kill switch blocking internet, retrying")
+                update(detail: "Spoof lost · internet blocked", speed: 0, force: true)
+            }
+            return
+        }
+        if signalLost {
+            signalLost = false
+            appendLog("Spoof restored")
+        }
+        current = coordinate
+        try checkHandover(coordinate)
+        DispatchQueue.main.async {
+            self.position = coordinate
+            if let heading { self.heading = heading }
+            if !LocationSimulationSession.shared.isActive {
+                LocationSimulationSession.shared.start(at: coordinate)
+            }
+        }
     }
 
     /// Armed once we've been outside the radius; fires when we come back inside it.
